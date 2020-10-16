@@ -51,6 +51,13 @@ python setup.py develop
 conda install -c conda-forge intake-esm 
 pip install esgf-pyclient
 
+#Plotting curvilinear grids, UGRID
+#pip install psy-maps
+#conda install -c ncas -c conda-forge cf-python cf-plot
+
+#Conflicting matplotlib version (but might be useful at some point):
+#pip install holoviews geoviews datashader
+
 # Install the environment as Kernel for Jupyter
 python -m ipykernel install --user --name "$kernel_name" --display-name="$kernel_name"
 
