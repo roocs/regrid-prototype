@@ -3,55 +3,58 @@
 # mistral, user related
 module unload netcdf_c
 module unload python
-module load python3/2020.02-gcc-9.1.0
+#module load python3/2020.02-gcc-9.1.0
+module load python3/2021.01-gcc-9.1.0
 module load anaconda3
 
-# Clone xesmf to this directory
-xesmf_dir=xesmf
-
-# Clone clisops to this directory
-clisops_dir=clisops
-
 # Name of the new environment
-envname=xesmf_test
+envname=clisopsdev
 
 # Name of the new JupyterNB Kernel
-kernel_name="new_kernel"
+kernel_name="clisopsdev"
 
 
 
 
-# Create new conda environment and install xESMF incl dependencies
+# Create new conda environment
+conda update anaconda
 conda create -n $envname python=3
 source activate $envname
+
+# Install xesmf and its dependencies
 conda install -c conda-forge esmpy xarray scipy dask netCDF4 matplotlib cartopy jupyterlab
 #pip install xesmf
-git clone https://github.com/pangeo-data/xESMF.git $xesmf_dir
+git clone https://github.com/pangeo-data/xESMF.git xesmf
 #pip install pytest dask toolz
-cd $xesmf_dir
+cd xesmf
 #git checkout tags/v0.5.0 -b latest
 pip install -e .
 #python setup.py develop
 
-# Test the installation
-#python -m pytest
-#pytest -v --pyargs xesmf
+# Install joint environment.yml
+cd ..
+conda-env update -n $envname -f environment.yml
 
 # Install clisops and dependencies
-cd ..
-git clone https://github.com/roocs/clisops.git $clisops_dir
-cd $clisops_dir
-conda-env update -n $envname -f environment.yml 
-pip install -r requirements_dev.txt 
-git submodule update --init
-python setup.py develop
+for repo in clisops daops roocs-utils
+do
+  git clone https://github.com/roocs/${repo}.git $repo
+  cd $repo
+  #conda-env update -n $envname -f environment.yml 
+  pip install -r requirements_dev.txt
+  #git submodule update --init    # no longer needed
+  #python setup.py develop        # alternatively to pip install
+  pip install -e .
+  cd ..
+done
 
 # Optionally install pyesgf and intake-esm (the latter needed for the notebooks)
 pip install esgf-pyclient
 conda install -c conda-forge ipykernel intake-esm=2020.8.15
+#conda install -c conda-forge spyder=4 numpy pandas sympy cython
 
 #Plotting curvilinear grids, UGRID
-#pip install psy-maps
+pip install psy-maps
 #conda install -c ncas -c conda-forge cf-python cf-plot
 
 #Conflicting matplotlib version (but might be useful at some point):
@@ -60,8 +63,15 @@ conda install -c conda-forge ipykernel intake-esm=2020.8.15
 # Install the environment as Kernel for Jupyter
 python -m ipykernel install --user --name "$kernel_name" --display-name="$kernel_name"
 
-# Final test
-pytest -v tests
-cd ../$xesmf_dir/xesmf
-#pytest -v --pyargs xesmf
-python -m pytest
+# Prevent problem (fixture 'tmp_path' not found) with old pytest version
+pip install --upgrade pytest
+
+# Final tests
+for repo in clisops daops roocs-utils
+do
+  cd $repo
+  pytest -v
+  cd ..
+done
+cd xesmf/xesmf
+pytest -v
