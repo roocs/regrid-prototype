@@ -8,7 +8,7 @@ print(grid)
 print("-"*20)
 
 # Load 2degree global grid with specified land sea mask
-dsc=xr.open_dataset("regrid-prototype/target_grids/land_sea_mask_2degree.nc4")
+dsc=xr.open_dataset("target_grids/land_sea_mask_2degree.nc4")
 gridc=clore.Grid(ds=dsc)
 print(gridc)
 print("-"*20)
