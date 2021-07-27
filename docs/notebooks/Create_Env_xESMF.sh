@@ -33,7 +33,7 @@ pip install -e .
 
 # Install joint environment.yml
 cd ..
-conda-env update -n $envname -f environment.yml
+conda env update -n $envname -f environment.yml
 
 # Install clisops and dependencies
 for repo in clisops daops roocs-utils
